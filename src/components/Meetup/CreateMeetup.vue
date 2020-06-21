@@ -5,7 +5,7 @@
         <h3>Create a new Meetup</h3>
       </v-flex>
     </v-layout>
-    <form>
+    <form @submit.prevent="onCreateMeetup">
       <v-layout row>
         <v-flex x12 sm6 offset-sm3>
           <v-text-field name="title" label="Title" id="title" v-model="title" required></v-text-field>
@@ -45,9 +45,24 @@
           ></v-textarea>
         </v-flex>
       </v-layout>
+      <v-layout row class="mt-6 mb-3">
+        <v-flex xs12 sm6 offset-sm3>
+          <h4>Choose a Date &amp; Time</h4>
+        </v-flex>
+      </v-layout>
       <v-layout row>
         <v-flex xs12 sm6 offset-sm3>
-          <v-btn class="mt-3 mb-6 primary" :disabled="!formIsValid">Create Meetup</v-btn>
+          <v-date-picker full-width v-model="date"></v-date-picker>
+        </v-flex>
+      </v-layout>
+      <v-layout row>
+        <v-flex xs12 sm6 offset-sm3>
+          <v-time-picker full-width v-model="time" format="24hr"></v-time-picker>
+        </v-flex>
+      </v-layout>
+      <v-layout row>
+        <v-flex xs12 sm6 offset-sm3>
+          <v-btn type="submit" class="mt-16 mb-8 primary" :disabled="!formIsValid">Create Meetup</v-btn>
         </v-flex>
       </v-layout>
     </form>
@@ -60,7 +75,9 @@ export default {
       title: "",
       location: "",
       imageUrl: "",
-      description: ""
+      description: "",
+      date: new Date().toISOString().split("T")[0],
+      time: new Date()
     };
   },
   computed: {
@@ -74,6 +91,35 @@ export default {
     },
     imageHeight() {
       return this.imageUrl === "" ? "0px" : "300px";
+    },
+    submittableDateTime() {
+      const date = new Date(this.date);
+      if (typeof this.time === "string") {
+        const hours = this.time.match(/^(\d+)/)[1];
+        const minutes = this.time.match(/:(\d+)/)[1];
+        date.setHours(hours);
+        date.setMinutes(minutes);
+      } else {
+        date.setHours(this.time.getHours());
+        date.setMinutes(this.time.getMinutes());
+      }
+      return date;
+    }
+  },
+  methods: {
+    onCreateMeetup() {
+      if (!this.formIsValid) {
+        return;
+      }
+      const meetupData = {
+        title: this.title,
+        location: this.location,
+        imageUrl: this.imageUrl,
+        description: this.description,
+        date: this.submittableDateTime
+      };
+      this.$store.dispatch("createMeetup", meetupData);
+      this.$router.push("/meetups/");
     }
   }
 };
