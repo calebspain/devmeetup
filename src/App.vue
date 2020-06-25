@@ -36,35 +36,50 @@ export default {
   components: {},
 
   data: () => ({
-    sideNav: false,
-    menuItems: [
-      {
-        icon: "mdi-account-supervisor",
-        title: "View Meetups",
-        link: "/meetups"
-      },
-      {
-        icon: "mdi-map-marker",
-        title: "Organize Meetup",
-        link: "/meetup/new"
-      },
-      {
-        icon: "mdi-account",
-        title: "Profile",
-        link: "/profile"
-      },
-      {
-        icon: "mdi-account-circle-outline",
-        title: "Sign up",
-        link: "/signup"
-      },
-      {
-        icon: "mdi-lock-open-outline",
-        title: "Sign in",
-        link: "/signin"
+    sideNav: false
+  }),
+  computed: {
+    menuItems() {
+      let menuItems = [
+        {
+          icon: "mdi-account-circle-outline",
+          title: "Sign up",
+          link: "/signup"
+        },
+        {
+          icon: "mdi-lock-open-outline",
+          title: "Sign in",
+          link: "/signin"
+        }
+      ];
+      if (this.userIsAuthenticated) {
+        menuItems = [
+          {
+            icon: "mdi-account-supervisor",
+            title: "View Meetups",
+            link: "/meetups"
+          },
+          {
+            icon: "mdi-map-marker",
+            title: "Organize Meetup",
+            link: "/meetup/new"
+          },
+          {
+            icon: "mdi-account",
+            title: "Profile",
+            link: "/profile"
+          }
+        ];
       }
-    ]
-  })
+      return menuItems;
+    },
+    userIsAuthenticated() {
+      return (
+        this.$store.getters.user !== null &&
+        this.$store.getters.user !== undefined
+      );
+    }
+  }
 };
 </script>
 <style scoped>
