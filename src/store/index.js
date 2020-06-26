@@ -6,33 +6,17 @@ Vue.use(Vuex);
 
 export const store = new Vuex.Store({
     state: {
-        loadedMeetups: [
-            {
-                imageUrl:
-                    "https://lp-cms-production.imgix.net/2019-06/GettyImages-538096543_medium.jpg?fit=crop&q=40&sharp=10&vib=20&auto=format&ixlib=react-8.6.4",
-                id: "chbfvubedhs",
-                title: "Meetup in NY",
-                date: new Date(),
-                location: "NY",
-                description: "description 1"
-            },
-            {
-                imageUrl:
-                    "https://images.law.com/contrib/content/uploads/sites/401/2020/04/Austin-Texas-Article-202004241528.jpg",
-                id: "egwcvyweuycuy",
-                title: "Meetup in TX",
-                date: new Date(),
-                location: "Houston",
-                description: "description 2"
-            }
-        ],
+        loadedMeetups: [],
         user: null,
         loading: false,
         error: null
     },
     mutations: {
+        setLoadedMeetups(state, payload) {
+            state.loadedMeetups = payload;
+        },
         createMeetup(state, payload) {
-            state.loadedMeetups.push(payload)
+            state.loadedMeetups.push(payload);
         },
         setUser(state, payload) {
             state.user = payload;
@@ -48,17 +32,48 @@ export const store = new Vuex.Store({
         }
     },
     actions: {
+        loadMeetups({ commit }) {
+            commit('setLoading', true);
+            firebase.database().ref('meetups').once('value')
+                .then(data => {
+                    const meetups = [];
+                    const obj = data.val();
+                    for (let key in obj) {
+                        meetups.push({
+                            id: key,
+                            title: obj[key].title,
+                            description: obj[key].description,
+                            imageUrl: obj[key].imageUrl,
+                            date: obj[key].date
+                        })
+                    }
+                    commit('setLoadedMeetups', meetups);
+                    commit('setLoading', false);
+                })
+                .catch(error => {
+                    console.error(error);
+                    commit('setLoading', false);
+                })
+        },
         createMeetup({ commit }, payload) {
             const meetup = {
                 title: payload.title,
                 location: payload.location,
                 imageUrl: payload.imageUrl,
                 description: payload.description,
-                date: payload.date,
-                id: 'ecbueiryberw'
+                date: payload.date.toISOString()
             };
-            // Reach out to firebase and store it
-            commit('createMeetup', meetup);
+            firebase.database().ref('meetups').push(meetup)
+                .then(data => {
+                    const key = data.key;
+                    commit('createMeetup', {
+                        ...meetup,
+                        id: key
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
+                })
         },
         signUserUp({ commit }, payload) {
             commit('setLoading', true);
@@ -103,6 +118,9 @@ export const store = new Vuex.Store({
                         console.error(error);
                     }
                 )
+        },
+        clearError({ commit }) {
+            commit('clearError');
         }
     },
     getters: {

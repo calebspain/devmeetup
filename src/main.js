@@ -28,5 +28,6 @@ new Vue({
       messagingSenderId: '3821973590',
       appId: '1:3821973590:web:10154abdb982c412e00bf7'
     })
+    this.$store.dispatch('loadMeetups');
   }
 }).$mount('#app')

@@ -8,7 +8,12 @@
         <v-btn large router to="/meetup/new" class="ma-3" color="grey lighten-5">Organize Meetup</v-btn>
       </v-flex>
     </v-layout>
-    <v-layout class="mb-3">
+    <v-layout>
+      <v-flex xs12 class="text-xs-center">
+        <v-progress-circular :value="20" v-if="loading"></v-progress-circular>
+      </v-flex>
+    </v-layout>
+    <v-layout class="mb-3" v-if="!loading">
       <v-flex xs12>
         <v-carousel style="cursor: pointer">
           <v-carousel-item
@@ -31,9 +36,24 @@
 </template>
 <script>
 export default {
+  created: function() {
+    if (!this.userIsAuthenticated) {
+      this.$router.push("/signin");
+      this.$store.commit("setLoading", false);
+    }
+  },
   computed: {
     meetups() {
       return this.$store.getters.featuredMeetups;
+    },
+    userIsAuthenticated() {
+      return (
+        this.$store.getters.user !== null &&
+        this.$store.getters.user !== undefined
+      );
+    },
+    loading() {
+      return this.$store.getters.loading;
     }
   },
   methods: {
